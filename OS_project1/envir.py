@@ -5,9 +5,10 @@ from functools import partial
 
 BUTTON_ON_COLOR = 'SkyBlue'
 BUTTON_OFF_COLOR = 'Snow'
-BUTTON_TYPE = 'groove' 
-ELEVATOR_SPEED = 2
-REACTION_TIME = 0.5
+BUTTON_TYPE = 'groove'
+OPEN_TIME = 1.5
+MOVE_TIME = 0.2
+TURN_TIME = 0.1
 
 MQ = Queue(maxsize=20)                # 消息队列
 
@@ -19,18 +20,23 @@ class Elevator:
         
         self.door = False             # 电梯门的状态
 
-        self.picfile = tk.PhotoImage(file = 'Elevator.png')
-        self.pic = tk.Label(window, image = self.picfile)   # 电梯图片
+        self.pic_off = tk.PhotoImage(file = 'ElevatorOff.png')
+        self.pic_on = tk.PhotoImage(file = 'ElevatorOn.png')
+        self.pic = tk.Label(window, image = self.pic_off)   # 电梯图片
+        self.pic.place(x=70+no*150, y=522, anchor = tk.CENTER)
         
         self.button = []              # 电梯内部按钮
         for i in range(0,16):
             self.button.append(tk.Button(window, command = partial(self.interior_request,i),
                                          text = str(i+1), width = 3, heigh = 1, bg = BUTTON_OFF_COLOR,
                                          relief = BUTTON_TYPE))
-            if i<8:
-                self.button[i].place(x=130+no*150, y=400-i*30, anchor = tk.CENTER)
-            else:
-                self.button[i].place(x=160+no*150, y=400-(i-8)*30, anchor = tk.CENTER)
+        for i in range(0,16):
+            self.button[i].place(x=130+no*150, y=32*(15-i)+42, anchor=tk.CENTER)
+
+        #    if i<8:
+        #        self.button[i].place(x=130+no*150, y=400-i*30, anchor = tk.CENTER)
+        #     else:
+        #        self.button[i].place(x=160+no*150, y=400-(i-8)*30, anchor = tk.CENTER)
 
         #self.floor_text = tk.Label(window,bg = 'lightCyan', fg = 'red', width = 10, textvariable = tk.StringVar(value=str(self.location)))
         #self.floor_text.place(x=500, y=500)     
@@ -54,72 +60,84 @@ class Elevator:
         self.down_list.sort()
 
 
-    def interior_request(self, req_floor):                 # 处理内部请求
-        if req_floor != self.location:
-            self.button[req_floor]['bg'] = BUTTON_ON_COLOR
+    def interior_request(self, floor):                     # 处理内部请求
+        if floor != self.location:
+            self.button[floor]['bg'] = BUTTON_ON_COLOR
 
-        if req_floor > self.location:
-            self.insert_uplist(req_floor)
+        if floor > self.location:
+            self.insert_uplist(floor)
             if self.state == 0:
                 self.state = 1
-        elif req_floor < self.location:
-            self.insert_downlist(req_floor)
+        elif floor < self.location:
+            self.insert_downlist(floor)
             if self.state == 0:
                 self.state = -1
 
 
-    def exterior_request(self, req_floor, req_direction):  # 处理外部请求        
+    def exterior_request(self, floor, direction):          # 处理外部请求        
         if self.state == 0:                                # 若电梯静止则改变电梯运行状态
-            if req_floor > self.location:
+            if floor > self.location:
                 self.state = 1
-            elif req_floor < self.location:
+            elif floor < self.location:
                 self.state = -1
-        
-        if req_direction == 1:
-            self.insert_uplist(req_floor)
-        elif req_direction == -1:
-            self.insert_downlist(req_floor)
-            
-            
-    def arrive_time(self, floor, direction):              # 计算达到时间,用于外部按钮的调度
-        sta = self.state
-        loc = self.location
-        if sta == 0:
-            return abs(floor-self.location)
-
-        time = 0
-        while True:
-            if loc == floor and direction == sta:
-                break
-            if len(self.up_list)==0 and len(self.down_list)==0:
-                time += abs(floor-self.location)
-                break
-            if sta == 1:
-                if (self.up_list and self.up_list[-1]>self.location)or(self.down_list and self.down_list[-1]>self.location):
-                    loc += 1
-                    time += 1
-                else:
-                    sta = -sta
-                    time += 1
             else:
-                if (self.get_uplist and self.up_list[0]<self.location)or(self.down_list and self.down_list[0]<self.location):
-                    loc -= 1
-                    time -= 1
+                self.state = direction
+        
+        if direction == 1:
+            self.insert_uplist(floor)
+        elif direction == -1:
+            self.insert_downlist(floor)
+            
+
+    def up_max(self):                                        # 计算上行的最高层
+        um = self.location
+        if self.up_list:
+            if self.up_list[-1] > um:
+                um = self.up_list[-1]
+        if self.down_list:
+            if self.down_list[-1] > um:
+                um = self.down_list[-1]
+        return um
+
+
+    def down_min(self):                                      # 计算下行的最低层
+        dm = self.location
+        if self.up_list:
+            if self.up_list[0] < dm:
+                dm = self.up_list[0]
+        if self.down_list:
+            if self.down_list[0] < dm:
+                dm = self.down_list[0]
+        return dm
+
+            
+    def arrive_time(self, floor, direction):                  # 计算达到时间,用于外部按钮的调度
+        if self.state == 0:
+            return abs(self.location - floor)
+        else:
+            if self.state == direction:                       # 同向   
+                if (floor-self.location)*direction > 0:       # 同向且顺路
+                    return abs(self.location - floor)
+                else:                                         # 同向不顺路
+                    if self.state == 1:
+                        return 2*(self.up_max()-self.location)+abs(self.up_max()*2-self.location-floor)
+                    else:
+                        return 2*(self.location-self.down_min())+abs(self.down_min()*2-self.location-floor)
+            else:                                             # 反向
+                if self.state == 1:
+                    return abs(self.up_max()*2-self.location-floor)
                 else:
-                    sta = -sta
-                    time += 1
-                    
-        return time
+                    return abs(self.down_min()*2-self.location-floor)
                 
             
     def run(self):                                            # 控制电梯运行
         while True:
-            if self.door:
-                self.close_door()
-
+            sleep(0.1)                                        # 控制基础循环时间
+            
             if self.state == 1:
                 if self.location in self.up_list:             # 将已到达的目标位置消去
                     self.up_list.remove(self.location)
+                    self.send()
                     self.open_door()                          # 开门
                 if len(self.up_list)==0 and len(self.down_list)==0:
                     self.state = 0
@@ -130,7 +148,8 @@ class Elevator:
             elif self.state == -1:
                 if self.location in self.down_list:
                     self.down_list.remove(self.location)
-                    self.open_door()                          # 开门          
+                    self.send()
+                    self.open_door()                          # 开门
                 if len(self.up_list)==0 and len(self.down_list)==0:
                     self.state = 0
                 elif (self.up_list and self.up_list[0]<self.location)or(self.down_list and self.down_list[0]<self.location):
@@ -138,20 +157,23 @@ class Elevator:
                 else:
                     self.move(0)                              # 转向
 
-            if self.state == 0:
-                sleep(REACTION_TIME)
-            else:
-                sleep(ELEVATOR_SPEED)
-
 
     def move(self, s):                                        # s=0: 电梯转向
         self.location += s
-        self.button[self.location]['bg'] = BUTTON_OFF_COLOR
-        if s == 0:
+
+        if s != 0:
+            sleep(MOVE_TIME)
+            self.pic.place(y=32*(15-self.location)+42)
+        else:
+            sleep(TURN_TIME)
             s = -self.state
             self.state = -self.state
+        
+        self.button[self.location]['bg'] = BUTTON_OFF_COLOR
 
-        if s == 1:
+
+    def send(self):                                            # 发出消息改变外部按钮状态
+        if self.state == 1:
             if self.location != 15:
                 mes = self.location
                 MQ.put(mes)
@@ -160,17 +182,12 @@ class Elevator:
                 mes = self.location + 14
                 MQ.put(mes)
 
-        print('No' + str(self.no))                        # 调试 
-        print('arriving ' + str(self.location) + ' floor')# 调试
-        print('state = ' + str(self.state))               # 调试
-
 
     def open_door(self):
-        print('Open')
         self.door = True
-        return
-    def close_door(self):
-        print('Close')
+        self.pic['image'] = self.pic_on
+        sleep(OPEN_TIME)
+        self.pic['image'] = self.pic_off
         self.door = False
         return
 

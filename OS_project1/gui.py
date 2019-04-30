@@ -11,10 +11,10 @@ window['bg'] = 'Snow'
 elevator_list = [Elevator(n, window) for n in range(0,5)]
 ex_button = [tk.Button(window, bg = BUTTON_OFF_COLOR,
                        width = 3, heigh = 1, relief = BUTTON_TYPE) for i in range(0,30)]
-for i in range(0,9):
-    ex_button[i].place(x=855, y=45*(9-i)+100, anchor=tk.CENTER)
-for i in range(9,18):
-    ex_button[i].place(x=900, y=45*(18-i)+55, anchor=tk.CENTER)
+for i in range(0,15):
+    ex_button[i].place(x=855, y=32*(15-i)+42, anchor=tk.CENTER)
+for i in range(15,30):
+    ex_button[i].place(x=900, y=32*(30-i)+10, anchor=tk.CENTER)
 
 
 def ex_button_callback(i):
@@ -27,9 +27,11 @@ def ex_button_callback(i):
         floor = i-14
         direction = -1
     eleno = 0
-    mindis = 50
-    for n in range(0,5):
+    mindis = elevator_list[0].arrive_time(floor, direction)
+    print('0 :' + str(mindis)) # 调试
+    for n in range(1,5):
         t = elevator_list[n].arrive_time(floor, direction)
+        print(str(n) + ' :' + str(t)) # 调试
         if mindis > t:
             mindis = t
             eleno = n

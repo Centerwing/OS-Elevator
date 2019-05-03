@@ -3,12 +3,11 @@ from time import sleep
 from queue import Queue
 from functools import partial
 
-BUTTON_ON_COLOR = 'SkyBlue'
-BUTTON_OFF_COLOR = 'Snow'
-BUTTON_TYPE = 'groove'
-OPEN_TIME = 1.5
-MOVE_TIME = 0.2
-TURN_TIME = 0.1
+BUTTON_ON_COLOR = 'DarkOrange'
+BUTTON_OFF_COLOR = 'lavender'
+BUTTON_TYPE = 'flat'
+OPEN_TIME = 1.5                       # 电梯开门的时间 
+MOVE_TIME = 0.015                     # 移动1像素的时间
 
 MQ = Queue(maxsize=20)                # 消息队列
 
@@ -20,10 +19,9 @@ class Elevator:
         
         self.door = False             # 电梯门的状态
 
-        self.pic_off = tk.PhotoImage(file = 'ElevatorOff.png')
-        self.pic_on = tk.PhotoImage(file = 'ElevatorOn.png')
-        self.pic = tk.Label(window, image = self.pic_off)   # 电梯图片
-        self.pic.place(x=70+no*150, y=522, anchor = tk.CENTER)
+        self.pic_file = tk.PhotoImage(file = 'source/ElevatorOff.png')
+        self.pic = tk.Label(window, image = self.pic_file, bd = 0)   # 电梯图片
+        self.pic.place(x=70+no*150, y=562, anchor = tk.CENTER)
         
         self.button = []              # 电梯内部按钮
         for i in range(0,16):
@@ -31,7 +29,7 @@ class Elevator:
                                          text = str(i+1), width = 3, heigh = 1, bg = BUTTON_OFF_COLOR,
                                          relief = BUTTON_TYPE))
         for i in range(0,16):
-            self.button[i].place(x=130+no*150, y=32*(15-i)+42, anchor=tk.CENTER)
+            self.button[i].place(x=130+no*150, y=32*(15-i)+82, anchor=tk.CENTER)
 
         #    if i<8:
         #        self.button[i].place(x=130+no*150, y=400-i*30, anchor = tk.CENTER)
@@ -132,7 +130,7 @@ class Elevator:
             
     def run(self):                                            # 控制电梯运行
         while True:
-            sleep(0.1)                                        # 控制基础循环时间
+            sleep(0.02)                                       # 控制基础循环时间
             
             if self.state == 1:
                 if self.location in self.up_list:             # 将已到达的目标位置消去
@@ -162,17 +160,19 @@ class Elevator:
         self.location += s
 
         if s != 0:
-            sleep(MOVE_TIME)
-            self.pic.place(y=32*(15-self.location)+42)
+            d = 31
+            while d >= 0:
+                self.pic.place(y=32*(15-self.location)+82+d*s)
+                d -= 1
+                sleep(MOVE_TIME)
         else:
-            sleep(TURN_TIME)
             s = -self.state
             self.state = -self.state
         
         self.button[self.location]['bg'] = BUTTON_OFF_COLOR
 
 
-    def send(self):                                            # 发出消息改变外部按钮状态
+    def send(self):                                           # 发出消息改变外部按钮状态
         if self.state == 1:
             if self.location != 15:
                 mes = self.location
@@ -183,11 +183,21 @@ class Elevator:
                 MQ.put(mes)
 
 
-    def open_door(self):
+    def open_door(self):                                      # 电梯开门动画
         self.door = True
-        self.pic['image'] = self.pic_on
-        sleep(OPEN_TIME)
-        self.pic['image'] = self.pic_off
+        sleep(OPEN_TIME/12)
+        self.pic_file['file'] = 'source/ElevatorOn1.png'
+        sleep(OPEN_TIME/12)
+        self.pic_file['file'] = 'source/ElevatorOn2.png'
+        sleep(OPEN_TIME/12)
+        self.pic_file['file'] = 'source/ElevatorOn3.png'
+        sleep(OPEN_TIME/2)
+        self.pic_file['file'] = 'source/ElevatorOn2.png'
+        sleep(OPEN_TIME/12)
+        self.pic_file['file'] = 'source/ElevatorOn1.png'
+        sleep(OPEN_TIME/12)
+        self.pic_file['file'] = 'source/ElevatorOff.png'
+        sleep(OPEN_TIME/12)
         self.door = False
         return
 

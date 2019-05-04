@@ -21,15 +21,15 @@ class Elevator:
 
         self.pic_file = tk.PhotoImage(file = 'source/ElevatorOff.png')
         self.pic = tk.Label(window, image = self.pic_file, bd = 0)   # 电梯图片
-        self.pic.place(x=70+no*150, y=562, anchor = tk.CENTER)
+        self.pic.place(x=70+no*150, y=690, anchor = tk.CENTER)
         
         self.button = []              # 电梯内部按钮
-        for i in range(0,16):
+        for i in range(0,20):
             self.button.append(tk.Button(window, command = partial(self.interior_request,i),
                                          text = str(i+1), width = 3, heigh = 1, bg = BUTTON_OFF_COLOR,
                                          relief = BUTTON_TYPE))
-        for i in range(0,16):
-            self.button[i].place(x=130+no*150, y=32*(15-i)+82, anchor=tk.CENTER)
+        for i in range(0,20):
+            self.button[i].place(x=130+no*150, y=32*(19-i)+82, anchor=tk.CENTER)
 
         #    if i<8:
         #        self.button[i].place(x=130+no*150, y=400-i*30, anchor = tk.CENTER)
@@ -162,7 +162,7 @@ class Elevator:
         if s != 0:
             d = 31
             while d >= 0:
-                self.pic.place(y=32*(15-self.location)+82+d*s)
+                self.pic.place(y=32*(19-self.location)+82+d*s)
                 d -= 1
                 sleep(MOVE_TIME)
         else:
@@ -174,12 +174,12 @@ class Elevator:
 
     def send(self):                                           # 发出消息改变外部按钮状态
         if self.state == 1:
-            if self.location != 15:
+            if self.location != 19:
                 mes = self.location
                 MQ.put(mes)
         else:
             if self.location != 0:
-                mes = self.location + 14
+                mes = self.location + 18
                 MQ.put(mes)
 
 

@@ -5,7 +5,23 @@ from envir import *
 window = tk.Tk()                                               
 window.title('Elevator Dispatch')
 window.geometry('960x600')
-window['bg'] = 'black'
+
+backgroud_image = tk.PhotoImage(file = 'source/BackGroud.png')
+backgroud = tk.Label(window, image = backgroud_image, bd = 0).pack()
+
+floor_label_1 = [tk.Label(window, text = 'F'+str(i+1), bd = 0,
+                    bg = '#191919', fg = 'Lavender', 
+                    width = 3, heigh = 2,
+                    font = ('Arial',13)) for i in range(16)]
+for i in range(0,16):
+    floor_label_1[i].place(x=30, y=32*(15-i)+82, anchor=tk.CENTER)
+
+floor_label_2 = [tk.Label(window, text = 'F'+str(i+1), bd = 0,
+                    bg = '#191919', fg = 'Lavender', 
+                    width = 3, heigh = 2,
+                    font = ('Arial',13)) for i in range(16)]
+for i in range(0,16):
+    floor_label_2[i].place(x=820, y=32*(15-i)+82, anchor=tk.CENTER)
 
 elevator_list = [Elevator(n, window) for n in range(0,5)]
 ex_button = [tk.Button(window, bg = BUTTON_OFF_COLOR, bd = 2,

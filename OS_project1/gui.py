@@ -2,37 +2,38 @@ import threading
 from envir import *
 
 
-window = tk.Tk()                                               
+window = tk.Tk()                                                    # 创建窗口
 window.title('Elevator Dispatch')
 window.geometry('960x720')
 
-backgroud_image = tk.PhotoImage(file = 'source/BackGroud.png')
+backgroud_image = tk.PhotoImage(file = 'source/BackGroud.png')      # 加载背景图片
 backgroud = tk.Label(window, image = backgroud_image, bd = 0).pack()
 
-floor_label_1 = [tk.Label(window, text = 'F'+str(i+1), bd = 0,
+floor_label_1 = [tk.Label(window, text = 'F'+str(i+1), bd = 0,      # 楼层标签
                     bg = '#191919', fg = 'Lavender', 
                     width = 3, heigh = 2,
                     font = ('Arial',13)) for i in range(20)]
 for i in range(0,20):
     floor_label_1[i].place(x=30, y=32*(19-i)+82, anchor=tk.CENTER)
 
-floor_label_2 = [tk.Label(window, text = 'F'+str(i+1), bd = 0,
+floor_label_2 = [tk.Label(window, text = 'F'+str(i+1), bd = 0,      # 楼层标签
                     bg = '#191919', fg = 'Lavender', 
                     width = 3, heigh = 2,
                     font = ('Arial',13)) for i in range(20)]
 for i in range(0,20):
     floor_label_2[i].place(x=820, y=32*(19-i)+82, anchor=tk.CENTER)
 
-elevator_list = [Elevator(n, window) for n in range(0,5)]
-ex_button = [tk.Button(window, bg = BUTTON_OFF_COLOR, bd = 2,
+elevator_list = [Elevator(n, window) for n in range(0,5)]           # 创建电梯列表
+
+ex_button = [tk.Button(window, bg = BUTTON_OFF_COLOR, bd = 2,       # 外部按钮列表
                        width = 24, heigh = 24, relief = BUTTON_TYPE) for i in range(0,38)]
 
-up_image = tk.PhotoImage(file = 'source/up.png')
+up_image = tk.PhotoImage(file = 'source/up.png')                    # 加载按钮图片
 up_on_image = tk.PhotoImage(file = 'source/up_on.png')
 down_image = tk.PhotoImage(file = 'source/down.png')
 down_on_image = tk.PhotoImage(file = 'source/down_on.png')
 
-for i in range(0,19):
+for i in range(0,19):                                               # 布置按钮位置
     ex_button[i]['image'] = up_image
     ex_button[i].place(x=855, y=32*(19-i)+82, anchor=tk.CENTER)
 for i in range(19,38):
@@ -40,7 +41,7 @@ for i in range(19,38):
     ex_button[i].place(x=900, y=32*(38-i)+50, anchor=tk.CENTER)
 
 
-def ex_button_callback(i):                                      # 外部按钮回调函数
+def ex_button_callback(i):                                          # 外部按钮回调函数
     ex_button[i]['bg'] = BUTTON_ON_COLOR
 
     if i < 19:
@@ -63,11 +64,11 @@ def ex_button_callback(i):                                      # 外部按钮�
     elevator_list[eleno].exterior_request(floor, direction)
 
 
-for i in range(0,38):
+for i in range(0,38):                                              # 设置外部按钮回调函数
     ex_button[i]['command'] = partial(ex_button_callback, i) 
 
 
-def ex_button_recover():
+def ex_button_recover():                                           # 外部按钮恢复函数
     while True:
         mes = MQ.get()
         ex_button[mes]['bg'] = BUTTON_OFF_COLOR
@@ -77,9 +78,9 @@ def ex_button_recover():
             ex_button[mes]['image'] = down_image
        
 
-for i in range(0,5):
+for i in range(0,5):                                               # 创建线程运行电梯
     threading.Thread(target = elevator_list[i].run).start()
 
-threading.Thread(target = ex_button_recover).start()
+threading.Thread(target = ex_button_recover).start()               # 创建线程运行外部按钮恢复函数
 
-window.mainloop()
+window.mainloop()                                                  # 启动主循环

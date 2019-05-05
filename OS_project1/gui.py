@@ -5,9 +5,7 @@ from envir import *
 window = tk.Tk()                                                    # 创建窗口
 window.title('Elevator Dispatch')
 window.geometry('960x720')
-
-backgroud_image = tk.PhotoImage(file = 'source/BackGroud.png')      # 加载背景图片
-backgroud = tk.Label(window, image = backgroud_image, bd = 0).pack()
+window['bg'] = 'black'
 
 floor_label_1 = [tk.Label(window, text = 'F'+str(i+1), bd = 0,      # 楼层标签
                     bg = '#191919', fg = 'Lavender', 

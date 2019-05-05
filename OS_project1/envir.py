@@ -21,10 +21,54 @@ class Elevator:
 
         self.door_signal = False      # 电梯开门信号
 
-        self.pic_file = tk.PhotoImage(file = 'source/ElevatorOff.png')
-        self.pic = tk.Label(window, image = self.pic_file, bd = 0)   # 电梯图片
-        self.pic.place(x=70+no*150, y=690, anchor = tk.CENTER)
+        self.pathwap = None           # 电梯轨道
+
+        self.pic_file = None          
+        self.pic = None               # 电梯图片
+
+        self.create_elevator(window, no)
         
+        self.open_button_pic = None
+        self.open_button = None       # 开门按钮
+
+        self.close_button_pic = None
+        self.close_button = None      # 关门按钮
+        
+        self.alert_button_pic = None
+        self.alert_button = None      # 报警按钮
+
+        self.create_door_button(window, no)
+
+        self.button = []              # 电梯内部楼层按钮
+
+        self.create_floor_button(window, no)
+
+        self.floor_label = None       # 楼层显示器
+
+        self.state_pic = None
+        self.state_label = None       # 电梯状态显示器
+
+        self.create_label(window, no)
+
+        self.state = 0                # 电梯当前工作状态(1-上行,0-静止,-1-下行)
+        
+        self.up_list = []             # 电梯上行的目标列表
+        
+        self.down_list = []           # 电梯下行的目标列表
+
+
+    def create_elevator(self, window, no):
+        self.pathwap = tk.Label(window, width = 4, heigh = 38, # 电梯轨道
+                                bg = 'DimGray')
+        self.pathwap.place(x=70+no*150,y=384,anchor=tk.CENTER)
+
+        self.pic_file = tk.PhotoImage(file = 'source/ElevatorOff.png')
+        self.pic = tk.Label(window, image = self.pic_file, bd = 2,
+                           relief = 'raised')                  # 电梯图片
+        self.pic.place(x=70+no*150, y=690, anchor = tk.CENTER)
+
+
+    def create_door_button(self, window, no):
         self.open_button_pic = tk.PhotoImage(file = 'source/open.png') # 电梯开关门按钮
         self.close_button_pic = tk.PhotoImage(file = 'source/close.png')
         self.open_button = tk.Button(window, image = self.open_button_pic, bd = 2,
@@ -41,7 +85,8 @@ class Elevator:
                                       bg = BUTTON_OFF_COLOR,
                                       width = 24, heigh = 24, relief = BUTTON_TYPE).place(x=116+no*150,y=626,anchor=tk.CENTER)
 
-        self.button = []              # 电梯内部楼层按钮
+
+    def create_floor_button(self, window, no): # 创建电梯内部按钮
         for i in range(0,20):
             self.button.append(tk.Button(window, command = partial(self.interior_request,i),
                                          text = str(i+1), width = 3, heigh = 1, bg = BUTTON_OFF_COLOR,
@@ -49,22 +94,18 @@ class Elevator:
         for i in range(0,20):
             self.button[i].place(x=150+no*150, y=32*(19-i)+82, anchor=tk.CENTER)
 
-        self.floor_label = tk.Label(window, width = 2, heigh = 1, bd = 3, # 电梯楼层标识
+
+    def create_label(self, window, no):
+        self.floor_label = tk.Label(window, width = 2, heigh = 1, bd = 3, # 电梯楼层显示器
                                     text = str(self.location+1), font = ('Arial',18),
                                     fg = 'DodgerBlue', bg = 'black', relief = 'sunken')
         self.floor_label.place(x=70+no*150,y=45,anchor=tk.CENTER)
 
-        self.state_pic = tk.PhotoImage(file = 'source/state_0.png') # 电梯状态标识
+        self.state_pic = tk.PhotoImage(file = 'source/state_0.png')       # 电梯状态显示器
         self.state_label = tk.Label(window, width = 30, heigh = 30, bd = 3,
                                     image = self.state_pic,
                                     bg = 'black', relief = 'sunken')
         self.state_label.place(x=116+no*150,y=45,anchor=tk.CENTER)
-
-        self.state = 0                # 电梯当前工作状态(1-上行,0-静止,-1-下行)
-        
-        self.up_list = []             # 电梯上行的目标列表
-        
-        self.down_list = []           # 电梯下行的目标列表
         
     
     def set_location(self, location):
@@ -255,17 +296,5 @@ class Elevator:
         self.door = False
         self.door_signal = False
         return
-
-
-    def get_state (self):
-        return self.state
-    def get_location (self):
-        return self.location
-    def get_no (self):
-        return self.no
-    def get_uplist (self):
-        print(self.up_list)
-    def get_downlist (self):
-        print(self.down_list)
                 
                 

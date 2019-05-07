@@ -4,7 +4,7 @@ from envir import *
 BACKGROUD_COLOR = 'black'
 
 window = tk.Tk()                                                    # 创建窗口
-window.title('Elevator Dispatch')
+window.title('Elevator scheduler')
 window.geometry('1080x720')
 window['bg'] = BACKGROUD_COLOR
 

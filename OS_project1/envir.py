@@ -4,10 +4,11 @@ from queue import Queue
 from functools import partial
 
 BUTTON_ON_COLOR = 'DarkOrange'
-BUTTON_OFF_COLOR = 'lavender'
+BUTTON_OFF_COLOR = 'Lavender'
 BUTTON_TYPE = 'flat'
+DX = 180                              # 电梯横向间隔
 OPEN_TIME = 1.5                       # 电梯开门的时间 
-MOVE_TIME = 0.015                     # 移动1像素的时间
+MOVE_TIME = 0.017                     # 移动1像素的时间
 
 MQ = Queue(maxsize=20)                # 消息队列
 
@@ -20,6 +21,8 @@ class Elevator:
         self.door = False             # 电梯门的状态
 
         self.door_signal = False      # 电梯开门信号
+
+        self.backgroud = None         # 背景板
 
         self.pathwap = None           # 电梯轨道
 
@@ -58,14 +61,19 @@ class Elevator:
 
 
     def create_elevator(self, window, no):
+        self.backgroud = tk.Label(window, width = 20,          # 背景板
+                                  heigh = 41, bd = 3,
+                                  bg = 'DimGray', relief = 'sunken')
+        self.backgroud.place(x = 125+no*DX, y = 362, anchor = tk.CENTER)
+
         self.pathwap = tk.Label(window, width = 4, heigh = 38, # 电梯轨道
-                                bg = 'DimGray')
-        self.pathwap.place(x=70+no*150,y=384,anchor=tk.CENTER)
+                                bg = 'black')
+        self.pathwap.place(x=94+no*DX,y=384,anchor=tk.CENTER)
 
         self.pic_file = tk.PhotoImage(file = 'source/ElevatorOff.png')
         self.pic = tk.Label(window, image = self.pic_file, bd = 2,
                            relief = 'raised')                  # 电梯图片
-        self.pic.place(x=70+no*150, y=690, anchor = tk.CENTER)
+        self.pic.place(x=94+no*DX, y=690, anchor = tk.CENTER)
 
 
     def create_door_button(self, window, no):
@@ -74,16 +82,16 @@ class Elevator:
         self.open_button = tk.Button(window, image = self.open_button_pic, bd = 2,
                                      bg = BUTTON_OFF_COLOR, command = partial(self.door_button_callback, 1),
                                      width = 24, heigh = 24, relief = BUTTON_TYPE)
-        self.open_button.place(x=116+no*150,y=690,anchor=tk.CENTER)
+        self.open_button.place(x=140+no*DX,y=690,anchor=tk.CENTER)
         self.close_button = tk.Button(window, image = self.close_button_pic,bd = 2,
                                       bg = BUTTON_OFF_COLOR, command = partial(self.door_button_callback, 0),
                                       width = 24, heigh = 24, relief = BUTTON_TYPE)
-        self.close_button.place(x=116+no*150,y=658,anchor=tk.CENTER)
+        self.close_button.place(x=140+no*DX,y=658,anchor=tk.CENTER)
 
         self.alert_button_pic = tk.PhotoImage(file = 'source/alert.png') # 电梯报警按钮
         self.alert_button = tk.Button(window, image = self.alert_button_pic, bd = 2,
                                       bg = BUTTON_OFF_COLOR,
-                                      width = 24, heigh = 24, relief = BUTTON_TYPE).place(x=116+no*150,y=626,anchor=tk.CENTER)
+                                      width = 24, heigh = 24, relief = BUTTON_TYPE).place(x=140+no*DX,y=626,anchor=tk.CENTER)
 
 
     def create_floor_button(self, window, no): # 创建电梯内部按钮
@@ -92,20 +100,20 @@ class Elevator:
                                          text = str(i+1), width = 3, heigh = 1, bg = BUTTON_OFF_COLOR,
                                          relief = BUTTON_TYPE))
         for i in range(0,20):
-            self.button[i].place(x=150+no*150, y=32*(19-i)+82, anchor=tk.CENTER)
+            self.button[i].place(x=174+no*DX, y=32*(19-i)+82, anchor=tk.CENTER)
 
 
     def create_label(self, window, no):
         self.floor_label = tk.Label(window, width = 2, heigh = 1, bd = 3, # 电梯楼层显示器
                                     text = str(self.location+1), font = ('Arial',18),
                                     fg = 'DodgerBlue', bg = 'black', relief = 'sunken')
-        self.floor_label.place(x=70+no*150,y=45,anchor=tk.CENTER)
+        self.floor_label.place(x=94+no*DX,y=35,anchor=tk.CENTER)
 
         self.state_pic = tk.PhotoImage(file = 'source/state_0.png')       # 电梯状态显示器
         self.state_label = tk.Label(window, width = 30, heigh = 30, bd = 3,
                                     image = self.state_pic,
                                     bg = 'black', relief = 'sunken')
-        self.state_label.place(x=116+no*150,y=45,anchor=tk.CENTER)
+        self.state_label.place(x=140+no*DX,y=35,anchor=tk.CENTER)
         
     
     def set_location(self, location):

@@ -1,25 +1,26 @@
 import threading
 from envir import *
 
+BACKGROUD_COLOR = 'black'
 
 window = tk.Tk()                                                    # 创建窗口
 window.title('Elevator Dispatch')
-window.geometry('960x720')
-window['bg'] = 'black'
+window.geometry('1080x720')
+window['bg'] = BACKGROUD_COLOR
 
 floor_label_1 = [tk.Label(window, text = 'F'+str(i+1), bd = 0,      # 楼层标签
-                    bg = '#191919', fg = 'Lavender', 
+                    bg = BACKGROUD_COLOR, fg = 'Lavender', 
                     width = 3, heigh = 2,
                     font = ('Arial',13)) for i in range(20)]
 for i in range(0,20):
     floor_label_1[i].place(x=30, y=32*(19-i)+82, anchor=tk.CENTER)
 
 floor_label_2 = [tk.Label(window, text = 'F'+str(i+1), bd = 0,      # 楼层标签
-                    bg = '#191919', fg = 'Lavender', 
+                    bg = BACKGROUD_COLOR, fg = 'Lavender', 
                     width = 3, heigh = 2,
                     font = ('Arial',13)) for i in range(20)]
 for i in range(0,20):
-    floor_label_2[i].place(x=820, y=32*(19-i)+82, anchor=tk.CENTER)
+    floor_label_2[i].place(x=950, y=32*(19-i)+82, anchor=tk.CENTER)
 
 elevator_list = [Elevator(n, window) for n in range(0,5)]           # 创建电梯列表
 
@@ -33,10 +34,10 @@ down_on_image = tk.PhotoImage(file = 'source/down_on.png')
 
 for i in range(0,19):                                               # 布置按钮位置
     ex_button[i]['image'] = up_image
-    ex_button[i].place(x=855, y=32*(19-i)+82, anchor=tk.CENTER)
+    ex_button[i].place(x=985, y=32*(19-i)+82, anchor=tk.CENTER)
 for i in range(19,38):
     ex_button[i]['image'] = down_image
-    ex_button[i].place(x=900, y=32*(38-i)+50, anchor=tk.CENTER)
+    ex_button[i].place(x=1030, y=32*(38-i)+50, anchor=tk.CENTER)
 
 
 def ex_button_callback(i):                                          # 外部按钮回调函数
